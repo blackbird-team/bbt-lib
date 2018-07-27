@@ -1,0 +1,48 @@
+{
+  "name": "bbt-lib",
+  "version": "0.0.1-alpha",
+  "description": "Package of auxiliary modules and classes",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "docs": "typedoc --out ./docs ./source/ts",
+    "compile": "tsc --pretty --outDir lib",
+    "prepublish": "rimraf ./lib & npm run test & npm run compile",
+    "lint": "tslint -c tslint.json --project ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/blackbird-team/bbt-lib.git"
+  },
+  "keywords": [],
+  "author": "Black Bird Team",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/blackbird-team/bbt-lib/issues"
+  },
+  "homepage": "https://github.com/blackbird-team/bbt-lib#readme",
+  "peerDependencies": {
+    "moment": "^2.22.2"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.0.0-beta.54",
+    "@babel/core": "^7.0.0-beta.54",
+    "@babel/node": "^7.0.0-beta.54",
+    "@babel/plugin-proposal-class-properties": "^7.0.0-beta.54",
+    "@babel/plugin-proposal-object-rest-spread": "^7.0.0-beta.54",
+    "@babel/preset-env": "^7.0.0-beta.54",
+    "@babel/preset-typescript": "^7.0.0-beta.54",
+    "@types/jest": "^23.3.1",
+    "@types/moment": "^2.13.0",
+    "@types/node": "^10.5.3",
+    "jest": "^23.4.1",
+    "moment": "^2.22.2",
+    "prettier": "^1.13.7",
+    "rimraf": "^2.6.2",
+    "ts-jest": "^23.0.1",
+    "tslint": "^5.11.0",
+    "tslint-config-bbt": "git+https://github.com/blackbird-team/tslint-config-bbt.git",
+    "typedoc": "^0.11.1",
+    "typescript": "^2.9.2"
+  }
+}
