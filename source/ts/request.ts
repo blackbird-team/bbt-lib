@@ -8,12 +8,14 @@ type TRequest = http.ClientRequest;
 type TResponse = http.IncomingMessage;
 
 export class Request {
+	protected checkLength: boolean = false;
 	private rawData: string = "";
 	private headers: http.IncomingHttpHeaders;
 
-	public static async get(_OPTIONS: http.RequestOptions): Promise<string | never> {
+	public static async get(_OPTIONS: http.RequestOptions, checkLength: boolean = false): Promise<string | never> {
 		try {
 			const request: Request = new Request();
+			request.checkLength = checkLength;
 			const data: string = await request._get(_OPTIONS);
 			return data;
 		} catch (err) {
@@ -22,8 +24,8 @@ export class Request {
 		}
 	}
 
-	public static async getJson(_OPTIONS: http.RequestOptions): Promise<object | never> {
-		const data: string = await this.get(_OPTIONS);
+	public static async getJson(_OPTIONS: http.RequestOptions, checkLength: boolean = false): Promise<object | never> {
+		const data: string = await this.get(_OPTIONS, checkLength);
 		return JSON.parse(data);
 	}
 
@@ -60,8 +62,9 @@ export class Request {
 	}
 
 	private onEnd(resolve: TResolve, reject: TReject): void {
+		if (!this.checkLength) return resolve(this.rawData);
+		
 		const conlength = this.headers["content-length"];
-
 		if (Number(conlength) !== this.rawData.length)
 			reject(new Error(`Length did not match ${this.rawData.length}/${conlength}`));
 		else resolve(this.rawData);
