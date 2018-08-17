@@ -50,17 +50,23 @@ describe("File System service test case", () => {
 		fs.closeSync(fd);
 	});
 
-	it("open file with create dir", async () => {
+	let fd: number;
+
+	it("open file with create dir and close after", async () => {
 		const file = __dirname + "/ww/test.txt";
 
 		expect(() => fs.statSync(file)).toThrow();
 
-		const fd = await FS.openFile(file);
+		fd = await FS.openFile(file);
 		expect(fs.statSync(file).isFile()).toBeTruthy();
-		fs.closeSync(fd);
+		await FS.closeFile(fd);
 	});
 
-	xit("close file", () => {
-		// Close file
+	it("double file closing are throwing", async () => {
+		try {
+			await FS.closeFile(fd);
+		} catch (err) {
+			expect(err.message).toEqual("EBADF: bad file descriptor, close");
+		}
 	});
 });
