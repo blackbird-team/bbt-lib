@@ -3,7 +3,12 @@ import Parser, { IPath } from "./../parser";
 import Files from "./middleware/static-files";
 
 interface ILayers {
-	[key: string]: ILayer | ILayers;
+	get: IMethodLayer;
+	post: IMethodLayer;
+}
+
+interface IMethodLayer {
+	[key: string]: ILayer | IMethodLayer;
 }
 
 interface ILayer {
@@ -17,19 +22,21 @@ interface IStatic {
 }
 
 const example: ILayers = {
-	"": {
-		__handlers: [],
-		section: {
+	get: {
+		"": {
 			__handlers: [],
-			page: {
-				__handlers: []
+			section: {
+				__handlers: [],
+				page: {
+					__handlers: []
+				}
 			}
 		}
 	}
 };
 
 export class Router {
-	private static readonly _layers: ILayers = { "": { __handlers: [] } };
+	private static readonly _layers: ILayers = { get: { "": { __handlers: [] } }, post: { "": { __handlers: [] } } };
 	private static readonly _static: IStatic = {};
 
 	private readonly _stream: ServerHttp2Stream;
@@ -54,7 +61,7 @@ export class Router {
 		}
 
 		try {
-			let layer = Router._layers[""] as ILayer;
+			let layer = Router._layers[method][""] as ILayer;
 			for (const l of this._parsed.path) {
 				if (typeof layer[l] === "undefined") continue;
 				layer = layer[l];
@@ -86,9 +93,29 @@ export class Router {
 	}
 
 	public static get(path: string, cb: (stream: ServerHttp2Stream, headers: IncomingHttpHeaders) => void): void {
+		Router.setHandler("get", path, cb);
+	}
+
+	public static post(path: string, cb: (stream: ServerHttp2Stream, headers: IncomingHttpHeaders) => void): void {
+		Router.setHandler("post", path, cb);
+	}
+
+	public static static(pathurl: string, dirpath: string): void {
+		Router._static[pathurl] = Files.bind(null, pathurl, dirpath);
+	}
+
+	public static reset(): void {
+		Router._layers[""] = { __handlers: [] };
+	}
+
+	private static setHandler(
+		method: string,
+		path: string,
+		cb: (stream: ServerHttp2Stream, headers: IncomingHttpHeaders) => void
+	): void {
 		const parsed = Parser.pathFromUrl(path);
 		try {
-			let layer: ILayer = Router._layers[""] as ILayer;
+			let layer: ILayer = Router._layers[method][""] as ILayer;
 			for (const l of parsed.path) {
 				if (l === "") continue;
 				if (typeof layer[l] === "undefined") layer[l] = { __handlers: [] };
@@ -99,13 +126,5 @@ export class Router {
 		} catch (err) {
 			console.log(err.message);
 		}
-	}
-
-	public static static(pathurl: string, dirpath: string): void {
-		Router._static[pathurl] = Files.bind(null, pathurl, dirpath);
-	}
-
-	public static reset(): void {
-		Router._layers[""] = { __handlers: [] };
 	}
 }

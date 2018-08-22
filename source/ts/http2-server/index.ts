@@ -60,6 +60,10 @@ export class Server {
 		Router.get(path, cb);
 	}
 
+	public post(path: string, cb: (stream: ServerHttp2Stream, headers: IncomingHttpHeaders) => void): void {
+		Router.post(path, cb);
+	}
+
 	public static(urlpath: string, dirpath: string): void {
 		Router.static(urlpath, dirpath);
 	}

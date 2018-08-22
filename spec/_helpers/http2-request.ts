@@ -1,7 +1,7 @@
 import http2, { ClientHttp2Session } from "http2";
 import { readFileSync } from "fs";
 
-export default async (protocol: "http" | "https", port: number, path: string): Promise<{}> =>
+export default async (protocol: "http" | "https", port: number, path: string, method: string = "get"): Promise<{}> =>
 	new Promise(
 		(resolve: (data: string) => void): void => {
 			let client: ClientHttp2Session;
@@ -13,7 +13,7 @@ export default async (protocol: "http" | "https", port: number, path: string): P
 				);
 			} else client = http2.connect(`${protocol}://localhost:${port}`);
 
-			const req = client.request({ ":path": path });
+			const req = client.request({ ":path": path, ":method": method });
 			
 			req.setEncoding("utf8");
 			let data = "";
