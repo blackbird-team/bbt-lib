@@ -1,6 +1,7 @@
 import { ServerHttp2Stream } from "http2";
 import { Server } from "./../source/ts/http2-server";
 import Request from "./_helpers/http2-request";
+import { readFileSync } from "fs";
 
 const _PORT = 45000;
 
@@ -54,5 +55,14 @@ describe("Server http2 case", (): void => {
 
 		const res = await Request("https", _PORT, "/");
 		expect(res).toEqual(response);
+	});
+
+	it("get secure file", async (): Promise<void> => {
+		const path = "/index.html";
+		server.static("/blabla/", "/spec/_helpers/");
+
+		const res = await Request("https", _PORT, `/blabla${path}`);
+		const file = readFileSync(process.cwd() + `/spec/_helpers${path}`);
+		expect(res).toEqual(file.toString());
 	});
 });

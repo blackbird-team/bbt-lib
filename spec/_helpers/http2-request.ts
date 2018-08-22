@@ -14,7 +14,7 @@ export default async (protocol: "http" | "https", port: number, path: string): P
 			} else client = http2.connect(`${protocol}://localhost:${port}`);
 
 			const req = client.request({ ":path": path });
-
+			
 			req.setEncoding("utf8");
 			let data = "";
 			req.on(
