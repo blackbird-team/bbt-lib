@@ -1,5 +1,6 @@
-import { ServerHttp2Stream, OutgoingHttpHeaders } from "http2";
+import { ServerHttp2Stream, OutgoingHttpHeaders, IncomingHttpHeaders } from "http2";
 import Parser, { IPath } from "./../parser";
+import Files from "./middleware/static-files";
 
 interface ILayers {
 	[key: string]: ILayer | ILayers;
@@ -9,7 +10,11 @@ interface ILayer {
 	__handlers: LayerHandler[];
 }
 
-type LayerHandler = (stream?: ServerHttp2Stream) => void;
+type LayerHandler = (stream: ServerHttp2Stream, headers: IncomingHttpHeaders) => void;
+
+interface IStatic {
+	[key: string]: typeof Files;
+}
 
 const example: ILayers = {
 	"": {
@@ -25,17 +30,28 @@ const example: ILayers = {
 
 export class Router {
 	private static readonly _layers: ILayers = { "": { __handlers: [] } };
+	private static readonly _static: IStatic = {};
 
 	private readonly _stream: ServerHttp2Stream;
 	private readonly _method: string;
 	private readonly _origin: string;
 	private readonly _parsed: IPath;
 
-	constructor(stream: ServerHttp2Stream, method: string = "get", path: string = "") {
+	constructor(stream: ServerHttp2Stream, headers: IncomingHttpHeaders, method: string = "get", path: string = "") {
 		this._stream = stream;
 		this._method = method;
 		this._origin = path;
 		this._parsed = Parser.pathFromUrl(path);
+
+		try {
+			for (const s in Router._static)
+				if (this._origin.startsWith(s)) {
+					Router._static[s].call(null, this._stream, headers);
+					return;
+				}
+		} catch (err) {
+			console.log(err.message);
+		}
 
 		try {
 			let layer = Router._layers[""] as ILayer;
@@ -44,7 +60,7 @@ export class Router {
 				layer = layer[l];
 			}
 
-			for (const cb of layer.__handlers) cb.call(null, this._stream);
+			for (const cb of layer.__handlers) cb.call(null, this._stream, headers);
 
 			return;
 		} catch (err) {
@@ -69,7 +85,7 @@ export class Router {
 		this._stream.end("<h1>Hello World</h1>");
 	}
 
-	public static get(path: string, cb: (stream?: ServerHttp2Stream) => void): void {
+	public static get(path: string, cb: (stream: ServerHttp2Stream, headers: IncomingHttpHeaders) => void): void {
 		const parsed = Parser.pathFromUrl(path);
 		try {
 			let layer: ILayer = Router._layers[""] as ILayer;
@@ -83,6 +99,10 @@ export class Router {
 		} catch (err) {
 			console.log(err.message);
 		}
+	}
+
+	public static static(pathurl: string, dirpath: string): void {
+		Router._static[pathurl] = Files.bind(null, pathurl, dirpath);
 	}
 
 	public static reset(): void {

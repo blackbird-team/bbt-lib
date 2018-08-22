@@ -13,7 +13,7 @@ export class Stream {
 		this.headers = headers;
 		this.flags = flags;
 
-		new Router(stream, this.headers[":method"], this.headers[":path"]);
+		new Router(stream, headers, this.headers[":method"], this.headers[":path"]);
 
 		this.handlers();
 	}

@@ -1,4 +1,11 @@
-import { createSecureServer, createServer, Http2SecureServer, ServerHttp2Stream, Http2Server } from "http2";
+import {
+	createSecureServer,
+	createServer,
+	Http2SecureServer,
+	ServerHttp2Stream,
+	Http2Server,
+	IncomingHttpHeaders
+} from "http2";
 import { readFileSync } from "fs";
 
 import { Router } from "./router";
@@ -49,8 +56,12 @@ export class Server {
 		);
 	}
 
-	public get(path: string, cb: (stream?: ServerHttp2Stream) => void): void {
+	public get(path: string, cb: (stream: ServerHttp2Stream, headers: IncomingHttpHeaders) => void): void {
 		Router.get(path, cb);
+	}
+
+	public static(urlpath: string, dirpath: string): void {
+		Router.static(urlpath, dirpath);
 	}
 
 	private handlers(): void {
