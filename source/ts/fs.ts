@@ -2,18 +2,18 @@ import fs from "fs";
 import path from "path";
 
 export class FS {
-	public static async openFile(filePath: string): Promise<number | never> {
+	public static async openFile(filePath: string, flags: string | number = "w"): Promise<number | never> {
 		return new Promise(
 			async (resolve: (fd: number) => void, reject: (err: NodeJS.ErrnoException) => void): Promise<void> => {
 				const current = process.cwd();
 				const fullpath = path.relative(current, filePath);
 
 				const dirname = path.dirname(fullpath);
-				await this.createDir(dirname);
+				if (flags === "w") await this.createDir(dirname);
 
 				fs.open(
 					fullpath,
-					"w",
+					flags,
 					(err: NodeJS.ErrnoException | null, fd: number): void => {
 						if (err) reject(err);
 						else resolve(fd);
