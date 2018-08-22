@@ -57,6 +57,14 @@ describe("Server http2 case", (): void => {
 		expect(res).toEqual(response);
 	});
 
+	it("post secure index", async (): Promise<void> => {
+		const response = "helloPost";
+		server.post("/", handler(response));
+
+		const res = await Request("https", _PORT, "/", "post");
+		expect(res).toEqual(response);
+	});
+
 	it("get secure file", async (): Promise<void> => {
 		const path = "/index.html";
 		server.static("/blabla/", "/spec/_helpers/");
