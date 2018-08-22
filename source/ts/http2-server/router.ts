@@ -21,6 +21,7 @@ interface IStatic {
 	[key: string]: typeof Files;
 }
 
+/* Example
 const example: ILayers = {
 	get: {
 		"": {
@@ -34,6 +35,7 @@ const example: ILayers = {
 		}
 	}
 };
+*/
 
 export class Router {
 	private static readonly _layers: ILayers = { get: { "": { __handlers: [] } }, post: { "": { __handlers: [] } } };
@@ -61,7 +63,7 @@ export class Router {
 		}
 
 		try {
-			let layer = Router._layers[method][""] as ILayer;
+			let layer = Router._layers[this._method][""] as ILayer;
 			for (const l of this._parsed.path) {
 				if (typeof layer[l] === "undefined") continue;
 				layer = layer[l];
@@ -76,20 +78,11 @@ export class Router {
 
 		this._stream.respond(
 			{
-				"content-type": "text/html",
-				":status": 200,
-				"access-control-allow-origin": "*",
-				"access-control-allow-headers": "content-type"
-			},
-			{
-				endStream: false, // Default
-				getTrailers: (trailers: OutgoingHttpHeaders): void => {
-					console.log("Trailers", trailers);
-				}
+				":status": 404
 			}
 		);
 
-		this._stream.end("<h1>Hello World</h1>");
+		this._stream.end("<h1 style='margin: 50px 100px'>Not found</h1>");
 	}
 
 	public static get(path: string, cb: (stream: ServerHttp2Stream, headers: IncomingHttpHeaders) => void): void {
